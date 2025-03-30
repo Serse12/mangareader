@@ -10,7 +10,7 @@ class Globals:
             cls._instance = super(Globals, cls).__new__(cls)
             cls._instance._current_folder = None
             cls._instance._index_of_page = 0
-            cls._instance._canvas = None
+            cls._instance._image_frame = None
             cls._instance.num_files = 0
             cls._instance._scale_factor = 1
         return cls._instance
@@ -55,14 +55,14 @@ class Globals:
             raise ValueError("index_of_page must be a non-negative integer")
         self._index_of_page = index
 
-    # Getter and Setter for canvas
+    # Getter and Setter for image_frame
     @property
-    def canvas(self):
-        return self._canvas
+    def image_frame(self):
+        return self._image_frame
 
-    @canvas.setter
-    def canvas(self, canvas_obj):
-        self._canvas = canvas_obj  # No restriction; can be a tkinter Canvas or another object
+    @image_frame.setter
+    def image_frame(self, image_frame_obj):
+        self._image_frame = image_frame_obj  # No restriction; can be a tkinter image_frame or another object
 
     @num_files.setter
     def num_files(self, value):

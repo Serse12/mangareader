@@ -1,4 +1,4 @@
-from file_visualizer.PDFViewer import configure_pdf_frame, configure_window_with_scrollbars
+from file_visualizer.PDFViewer import configure_pdf_frame
 from globals import *
 from actions.button_functions import *
 from menus import configure_upper_menu
@@ -20,7 +20,6 @@ def configure_main_window():
     button4.grid(row=0, column=3)
     configure_upper_menu()
     configure_pdf_frame()
-    configure_window_with_scrollbars()
     run_keyboard()
     for i in range(4):
         window.grid_columnconfigure(i, weight=1, uniform="equal")  # Make columns resizable and equal
