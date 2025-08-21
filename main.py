@@ -7,7 +7,14 @@ from actions.keyboard import run_keyboard
 
 def configure_main_window():
     window.geometry("600x600")
-    window.title("Hello TkInter!")
+    window.title("Managa visualizer!")
+
+    globals = Globals()
+    with open('./bookmarks.txt', 'r') as file:
+        lines = file.readlines()
+        globals.current_folder = lines[-1][:-1] if lines else None
+        print(globals.current_folder)
+
     window.resizable(True, True)
     window.configure(background="white")
     button1 = tk.Button(window, text='<', command=prev_page)

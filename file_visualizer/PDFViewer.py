@@ -1,8 +1,12 @@
 import os
+import sys
 from tkinter import Scrollbar, BOTTOM, X, RIGHT, Y
 
 import fitz
 from PIL import Image, ImageTk
+import pillow_avif
+
+from actions.mouse import on_mouse_wheel
 from globals import *
 
 
@@ -63,7 +67,13 @@ def configure_pdf_frame():
         # Pack Scrollbars and Canvas
         h_scroll.pack(side=BOTTOM, fill=X)
         v_scroll.pack(side=RIGHT, fill=Y)
-        canvas.pack(side="left", fill="both", expand=True)
+        canvas.pack(fill="both", expand=True)
+
+        if sys.platform == "win32":
+            canvas.bind("<MouseWheel>", lambda event: on_mouse_wheel(event, canvas))
+        else:
+            canvas.bind("<Button-4>", lambda event: on_mouse_wheel(event, canvas))
+            canvas.bind("<Button-5>", lambda event: on_mouse_wheel(event, canvas))
 
         # Determine the file name based on the current page index
         file_name = f"/{os.path.basename(globals.current_folder)}"
@@ -81,20 +91,8 @@ def configure_pdf_frame():
 
             photo = ImageTk.PhotoImage(image)
 
-            # Function to center the image on the canvas
-            def center_image(event):
-                canvas_width = event.width
-                canvas_height = event.height
-                center_x = canvas_width / 2
-                center_y = canvas_height / 2
-                canvas.coords(image_id, center_x, center_y)
-                canvas.config(scrollregion=canvas.bbox(image_id))
-
             # Create the image on the canvas at the initial center position
             image_id = canvas.create_image(0, 0, image=photo, anchor='center')
-
-            # Bind the configure event to the center_image function
-            canvas.bind("<Configure>", center_image)
 
             # Update the scroll region to the size of the image
             canvas.config(scrollregion=canvas.bbox(image_id))

@@ -44,7 +44,9 @@ def get_directory_path():
     globals = Globals()
     globals.current_folder = filedialog.askdirectory()
     print(globals.current_folder)
+    globals.index_of_page = 0
     configure_pdf_frame()
+
 
 
 def add_bookmark():
