@@ -1,9 +1,12 @@
+import re
 import tkinter as tk
-from pathlib import Path
+from enum import Enum
 from pathlib import Path
 
+
 class Globals:
-    _instance = None  # Stores the single instance
+    _instance = None  # Singleton instance
+    DirectoryEnum = Enum("DirectoryEnum", {})  # Empty enum at class level
 
     def __new__(cls):
         if cls._instance is None:
@@ -11,10 +14,12 @@ class Globals:
             cls._instance._current_folder = None
             cls._instance._index_of_page = 0
             cls._instance._image_frame = None
-            cls._instance.num_files = 0
-            cls._instance._scale_factor = 1
+            cls._instance._num_files = 0
+            cls._instance._scale_factor = 1.0
+            cls._instance._current_index_enum = 1
         return cls._instance
 
+    # scale_factor
     @property
     def scale_factor(self):
         return self._scale_factor
@@ -24,30 +29,50 @@ class Globals:
         if isinstance(value, float) and value > 0:
             self._scale_factor = value
         else:
-            raise ValueError("Width must be a positive integer.")
+            raise ValueError("scale_factor must be a positive float.")
 
-    # Getter and Setter for current_folder
+    # current_folder
     @property
     def current_folder(self):
         return self._current_folder
 
     @current_folder.setter
     def current_folder(self, folder):
-        if not isinstance(folder, str) and folder is not None:
-            raise ValueError("current_folder must be a string or None")
-        self._current_folder = folder
-        dir_path = Path(self._current_folder)
-        self._num_files = len(list(dir_path.glob("*")))
-        print(self._num_files)
+        if folder is not None and not isinstance(folder, (str, Path)):
+            raise ValueError("current_folder must be a string, Path, or None")
 
-    # Getter and Setter for index_of_page
+        folder_path = Path(folder) if folder is not None else None
+        self._current_folder = str(folder_path)
+
+        if folder_path is None:
+            self._num_files = 0
+            Globals.DirectoryEnum = Enum("DirectoryEnum", {})
+            return
+
+        # count files in the current folder
+        self._num_files = len(list(folder_path.glob("*")))
+
+        # rebuild enum from parent subdirectories
+        result = folder_path.parent
+        subdirs = [str(p) for p in result.iterdir() if p.is_dir()]
+
+        sorted_subdirs = sorted(subdirs, key=Globals.chapter_number)
+
+        Globals.DirectoryEnum = Enum(
+            "DirectoryEnum",
+            {f"_{i + 1}": p for i, p in enumerate(sorted_subdirs)}
+        )
+
+        for d in Globals.DirectoryEnum:
+            print(d.name, "->", d.value, type(d.value))
+
+    def chapter_number(path_str):
+        match = re.search(r"Capitolo(\d+)", path_str)
+        return int(match.group(1)) if match else 0
+    # index_of_page
     @property
     def index_of_page(self):
         return self._index_of_page
-
-    @property
-    def num_files(self):
-        return self._num_files
 
     @index_of_page.setter
     def index_of_page(self, index):
@@ -55,18 +80,33 @@ class Globals:
             raise ValueError("index_of_page must be a non-negative integer")
         self._index_of_page = index
 
-    # Getter and Setter for image_frame
+    # num_files
+    @property
+    def num_files(self):
+        return self._num_files
+
+    @num_files.setter
+    def num_files(self, value):
+        self._num_files = value
+
+    # image_frame
     @property
     def image_frame(self):
         return self._image_frame
 
     @image_frame.setter
     def image_frame(self, image_frame_obj):
-        self._image_frame = image_frame_obj  # No restriction; can be a tkinter image_frame or another object
+        self._image_frame = image_frame_obj
 
-    @num_files.setter
-    def num_files(self, value):
-        self._num_files = value
+    def get_enum_index(self, path: str) -> int | None:
+        """Return 1-based index of a path in DirectoryEnum, or None if not found."""
+        values = list(self.DirectoryEnum)
+        return next((i for i, e in enumerate(values, start=1) if e.value == path), None)
+
+    def get_directory_by_index(self, index: int) -> str | None:
+        """Return the Path of DirectoryEnum member by 1-based index."""
+        name = f"_{index}"
+        return getattr(self.DirectoryEnum, name, None).value if hasattr(self.DirectoryEnum, name) else None
 
 
 window = tk.Tk()

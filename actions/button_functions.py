@@ -18,7 +18,22 @@ def second_function():
 
 def next_page():
     globals = Globals()
-    globals.index_of_page = (globals.index_of_page + 1) % globals.num_files
+    print(globals.index_of_page)
+    print(globals.num_files)
+    if globals.index_of_page + 1 == globals.num_files:
+        print("uooooo")
+        current_index = globals.get_enum_index(str(globals.current_folder))
+        print(current_index)
+        next_index = current_index + 1
+        if next_index > len(globals.DirectoryEnum):
+            next_index = 1
+
+        print(globals.get_directory_by_index(next_index))
+        globals.current_folder = globals.get_directory_by_index(next_index)
+        globals.index_of_page = 0
+    else:
+        globals.index_of_page = globals.index_of_page + 1
+
     configure_pdf_frame()
 
 
